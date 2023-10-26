@@ -25,13 +25,23 @@ func main() {
 	}
 }
 
+func prettyPrintJSON(data interface{}) {
+	jsonData, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		fmt.Println("Fehler beim Konvertieren in JSON:", err)
+		return
+	}
+
+	fmt.Println(string(jsonData))
+}
+
 func receiveJSON(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Nur POST-Anfragen sind erlaubt", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var requestData json.RawMessage
+	//var requestData json.RawMessage
 
 	// Lesen Sie den Request-Body
 	body, err := ioutil.ReadAll(r.Body)
@@ -41,11 +51,21 @@ func receiveJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Setzen Sie requestData auf das ungeparsste JSON
-	requestData = json.RawMessage(body)
+	//requestData = json.RawMessage(body)
 
 	// Jetzt können Sie requestData als Text ausgeben
-	textData := string(requestData)
-	fmt.Printf("JSON-Daten als Text: %s\n", textData)
+	//textData := string(requestData)
+	//fmt.Printf("JSON-Daten als Text: %s\n", textData)
+
+	// JSON-Rohdaten in eine json.RawMessage einlesen
+	var requestDataJ json.RawMessage
+	if err := json.Unmarshal(body, &requestDataJ); err != nil {
+		fmt.Println("Fehler beim Deserialisieren von JSON:", err)
+		return
+	}
+
+	// JSON-Daten in einem leserlichen Format ausgeben
+	prettyPrintJSON(requestDataJ)
 
 	w.WriteHeader(http.StatusOK)
 }
